@@ -29,4 +29,13 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function sharedTasks()
+    {
+        return $this->belongsToMany(Task::class)
+                    ->withPivot('accepted')
+                    ->withTimestamps();
+    }
+
 }
+

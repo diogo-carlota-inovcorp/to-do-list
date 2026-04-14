@@ -3,6 +3,9 @@
 @section('title', 'Minhas Tarefas')
 
 @section('content')
+
+
+
 <div class="w-full max-w-7xl mx-auto">
     <div class="flex gap-6">
 
@@ -19,6 +22,9 @@
 
 
       @php
+
+
+
             $params = request()->all();
             unset($params['month'], $params['year']);
 
@@ -59,11 +65,18 @@
                             @foreach($week as $day)
                                 @if($day)
                                     <div class="relative">
-                                        <div class="text-center p-2 rounded-lg
-                                            {{ $day['isToday'] ? 'bg-black text-white' : 'hover:bg-gray-100' }}
+                                      <a href="{{ route('tasks.index', array_merge(request()->all(), [
+                                            'selected_date' => $day['date']
+                                        ])) }}"
+                                            class="block text-center p-2 rounded-lg
+                                            {{ $day['isToday']
+                                            ? 'bg-black text-white'
+                                            : (request('selected_date') == $day['date']
+                                                ? 'bg-gray-300 text-black'
+                                                : 'hover:bg-gray-100') }}
                                             {{ $day['tasks']->count() > 0 && !$day['isToday'] ? 'bg-gray-50' : '' }}">
-                                            {{ $day['day'] }}
-                                        </div>
+                                                {{ $day['day'] }}
+                                    </a>
                                         @if($day['tasks']->count() > 0)
                                             <div class="flex justify-center gap-0.5 mt-0.5">
                                                 @foreach($day['tasks']->take(3) as $task)
@@ -216,6 +229,8 @@
                     </div>
 
                 </div>
+
+
 
                 <!-- LISTA DE TAREFAS -->
                 @if($tasks->isEmpty())

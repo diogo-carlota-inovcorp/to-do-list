@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\InviteController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 // Rotas públicas
@@ -22,6 +24,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('tasks', TaskController::class);
     Route::patch('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
     Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
+    Route::post('/invites/accept', [InviteController::class, 'accept']);
+    Route::post('/invites/reject', [InviteController::class, 'reject']);
+    Route::get('/notifications/clear', [NotificationController::class, 'clear']);
 
 });
 

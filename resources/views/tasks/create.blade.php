@@ -99,6 +99,32 @@
             </div>
         </div>
 
+                <!-- Linha 5: Partilhar -->
+        <div>
+            <label class="text-sm font-medium block mb-1">
+                Partilhar com (email)
+            </label>
+
+            <div class="flex gap-2">
+                <input type="email"
+                    id="shared_email_input"
+                    placeholder="ex: amigo@email.com"
+                    class="w-full px-3 py-2 border rounded-lg">
+
+                <button type="button"
+                        onclick="addEmail()"
+                        class="px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+                    +
+                </button>
+            </div>
+
+            <!-- Emails adicionados -->
+            <div id="emailsList" class="mt-2 flex flex-wrap gap-2"></div>
+
+            <!-- Hidden input -->
+            <input type="hidden" name="shared_emails" id="sharedEmailsInput">
+        </div>
+
         <!-- Botões -->
         <div class="flex gap-3 pt-2">
             <button type="submit" class="flex-1 bg-black text-white py-2 rounded-lg hover:opacity-90">
@@ -111,3 +137,43 @@
     </form>
 </div>
 @endsection
+        @push('scripts')
+        <script>
+        let emails = [];
+
+        function addEmail() {
+            const input = document.getElementById('shared_email_input');
+            const email = input.value.trim();
+
+            if (!email) return;
+
+            emails.push(email);
+            input.value = '';
+
+            renderEmails();
+        }
+
+        function renderEmails() {
+            const container = document.getElementById('emailsList');
+            const hiddenInput = document.getElementById('sharedEmailsInput');
+
+            container.innerHTML = '';
+
+            emails.forEach((email, index) => {
+                container.innerHTML += `
+                    <div class="bg-gray-200 px-2 py-1 rounded flex items-center gap-1">
+                        <span class="text-sm">${email}</span>
+                        <button type="button" onclick="removeEmail(${index})" class="text-red-500">×</button>
+                    </div>
+                `;
+            });
+
+            hiddenInput.value = JSON.stringify(emails);
+        }
+
+        function removeEmail(index) {
+            emails.splice(index, 1);
+            renderEmails();
+        }
+        </script>
+        @endpush

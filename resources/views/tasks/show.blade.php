@@ -22,7 +22,7 @@
                 <div class="flex items-center gap-2 mb-2 flex-wrap">
                     <!-- Status -->
                     <span class="text-xs font-medium px-2 py-1 rounded {{ $task->status_info['bg'] }} {{ $task->status_info['text'] }}">
-                        {{ $task->status_info['icon'] }} {{ $task->status_info['label'] }}
+                        {{ $task->status_info['label'] }}
                     </span>
 
                     @if($task->category)
@@ -45,7 +45,7 @@
                 </h1>
             </div>
             <div class="flex gap-2">
-                <a href="{{ route('tasks.edit', $task) }}" class="text-blue-600 hover:text-blue-800">✏️ Editar</a>
+                <a href="{{ route('tasks.edit', $task) }}" class="text-blue-600 hover:text-blue-800"> Editar</a>
             </div>
         </div>
     </div>
@@ -100,6 +100,14 @@
             <span class="text-sm text-gray-500">Última atualização</span>
             <p class="font-semibold">{{ $task->updated_at->format('d/m/Y') }}</p>
         </div>
+
+
+        @if($task->sharedUsers->count())
+            <div class="text-xs text-gray-500 mt-1">
+                Partilhado com:
+                {{ $task->sharedUsers->pluck('name')->join(', ') }}
+            </div>
+        @endif
     </div>
 
     <!-- Botão de concluir (se não estiver concluído ou expirado) -->
@@ -108,7 +116,7 @@
             @csrf
             @method('PATCH')
             <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors">
-                ✅ Marcar como Concluída
+                Marcar como Concluída
             </button>
         </form>
     @endif
@@ -118,7 +126,7 @@
         @csrf
         @method('DELETE')
         <button type="submit" class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">
-            🗑️ Excluir Tarefa
+            Excluir Tarefa
         </button>
     </form>
 </div>

@@ -11,6 +11,8 @@ class TaskController extends Controller
 
     public function index(Request $request)
     {
+        $notificationsCount = 0; // temporário
+
         // Atualizar status das tarefas expiradas
         $expiredTasks = Task::where('user_id', auth()->id())
                            ->where('status', '!=', 'concluido')
@@ -37,6 +39,21 @@ class TaskController extends Controller
         if ($request->has('status') && in_array($request->status, ['pendente', 'iniciado', 'em_andamento', 'concluido', 'expirado'])) {
             $query->where('status', $request->status);
         }
+
+        $tasksQuery = Task::query();
+
+        if (request('selected_date')) {
+            $query->whereDate('due_date', request('selected_date'));
+        }
+
+    $tasks = $tasksQuery->get();
+
+        $tasks = Task::where('user_id', auth()->id())
+            ->orWhereHas('sharedUsers', function ($q) {
+                $q->where('user_id', auth()->id())
+                ->where('accepted', true);
+            })
+            ->get();
 
         $tasks = $query->orderByRaw("FIELD(status, 'pendente', 'iniciado', 'em_andamento', 'concluido', 'expirado')")
                        ->orderByRaw("FIELD(priority, 'alta', 'media', 'baixa')")
@@ -74,11 +91,22 @@ class TaskController extends Controller
             'currentCategory',
             'currentStatus',
             'allTasksForDots',
+            'notificationsCount',
             'categories',
             'calendarData',
             'month',
             'year'
         ));
+
+            $selectedDate = request('selected_date');
+
+            if ($selectedDate) {
+                $tasks = $tasks->filter(function ($task) use ($selectedDate) {
+                    return $task->due_date &&
+                        \Carbon\Carbon::parse($task->due_date)->format('Y-m-d') === $selectedDate;
+                });
+            }
+
     }
 
     private function getCalendarData($year, $month, $tasks)
@@ -105,7 +133,7 @@ class TaskController extends Controller
 
                     $week[] = [
                         'day' => $currentDay,
-                        'date' => $currentDate,
+                        'date' => $currentDate->format('Y-m-d'),
                         'tasks' => $tasksOnDay,
                         'isToday' => $currentDate->isToday(),
                     ];
@@ -252,4 +280,29 @@ class TaskController extends Controller
 
         return response()->json(['success' => true, 'status' => $task->status_info]);
     }
+
+    public function share(Task $task, Request $request)
+{
+    $user = User::where('email', $request->email)->first();
+
+    if ($user) {
+        $task->sharedUsers()->attach($user->id, ['accepted' => false]);
+
+        // notificação
+        $user->notify(new TaskSharedNotification($task));
+    }
+
+    return back();
+}
+
+
+public function accept(Task $task)
+{
+    $task->sharedUsers()->updateExistingPivot(auth()->id(), [
+        'accepted' => true
+    ]);
+
+    return back();
+}
+
 }
