@@ -100,4 +100,10 @@ class Task extends Model
                     ->withTimestamps();
     }
 
+
+    public function isOverdue(): bool
+    {
+        return $this->due_date && Carbon::parse($this->due_date)->isPast() && !$this->is_completed;
+    }
+
 }

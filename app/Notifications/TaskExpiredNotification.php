@@ -24,7 +24,9 @@ class TaskExpiredNotification extends Notification
     public function toDatabase($notifiable)
 {
     return [
-        'message' => "A tarefa '{$this->task->title}' expirou",
-        'task_id' => $this->task->id,
+        'message' => "A tarefa '{$this->task['title']}' expirou",
+        'task_id' => $this->task['id'],
     ];
+}
+
 }
