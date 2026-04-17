@@ -25,7 +25,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->route('tasks.index');  // ← MUDAR PARA tasks.index
+            return redirect()->route('tasks.index');  
         }
 
         return back()->withErrors([
@@ -58,7 +58,7 @@ class AuthController extends Controller
         Auth::login($user);
         return redirect()->route('tasks.index');
 
-        
+
     }
 
     // Logout

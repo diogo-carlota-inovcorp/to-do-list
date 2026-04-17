@@ -3,131 +3,159 @@
 @section('title', $task->title)
 
 @section('content')
-<div class="w-full max-w-2xl bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-8">
 
-    <a href="{{ route('tasks.index') }}" class="inline-flex items-center text-gray-600 hover:text-black mb-6">
-        ← Voltar para tarefas
+<div class="w-full max-w-4xl mx-auto">
+
+    <!-- BACK -->
+    <a href="{{ route('tasks.index') }}"
+       class="inline-flex items-center text-white/60 hover:text-white mb-6 transition">
+        ← Voltar
     </a>
 
-    @if(session('success'))
-        <div class="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-            {{ session('success') }}
-        </div>
-    @endif
+    <!-- MAIN CARD -->
+    <div class="bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
 
-    <!-- Cabeçalho da tarefa -->
-    <div class="border-b pb-4 mb-4">
-        <div class="flex justify-between items-start">
-            <div>
-                <div class="flex items-center gap-2 mb-2 flex-wrap">
-                    <!-- Status -->
-                    <span class="text-xs font-medium px-2 py-1 rounded {{ $task->status_info['bg'] }} {{ $task->status_info['text'] }}">
+        <!-- HEADER -->
+        <div class="flex justify-between items-start mb-6">
+
+            <div class="space-y-3">
+
+                <!-- TAGS -->
+                <div class="flex gap-2 flex-wrap text-xs">
+
+                    <span class="px-2 py-1 rounded bg-white/10 text-white/70">
                         {{ $task->status_info['label'] }}
                     </span>
 
                     @if($task->category)
-                        <span class="inline-block w-2 h-2 rounded-full" style="background-color: {{ $task->category_color }}"></span>
-                        <span class="text-xs px-2 py-1 rounded" style="background-color: {{ $task->category_color }}20; color: {{ $task->category_color }}">
+                        <span class="px-2 py-1 rounded"
+                              style="background-color: {{ $task->category_color }}20; color: {{ $task->category_color }}">
                             {{ $task->category }}
                         </span>
                     @endif
 
-                    <span class="text-xs font-medium uppercase px-2 py-1 rounded
-                        @if($task->priority == 'alta') bg-red-100 text-red-700
-                        @elseif($task->priority == 'media') bg-orange-100 text-orange-700
-                        @else bg-green-100 text-green-700
+                    <span class="px-2 py-1 rounded
+                        @if($task->priority == 'alta') bg-red-500/20 text-red-300
+                        @elseif($task->priority == 'media') bg-orange-500/20 text-orange-300
+                        @else bg-green-500/20 text-green-300
                         @endif">
                         {{ $task->priority }}
                     </span>
+
                 </div>
-                <h1 class="text-3xl font-bold {{ $task->status == 'concluido' ? 'line-through text-gray-500' : '' }}">
+
+                <!-- TITLE -->
+                <h1 class="text-3xl font-semibold leading-tight
+                    {{ $task->status == 'concluido' ? 'line-through text-white/40' : 'text-white' }}">
                     {{ $task->title }}
                 </h1>
+
             </div>
-            <div class="flex gap-2">
-                <a href="{{ route('tasks.edit', $task) }}" class="text-blue-600 hover:text-blue-800"> Editar</a>
-            </div>
+
+            <!-- EDIT -->
+            <a href="{{ route('tasks.edit', $task) }}"
+               class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition text-sm">
+                Editar
+            </a>
+
         </div>
-    </div>
 
-    <!-- Descrição -->
-    <div class="mb-6">
-        <h3 class="text-lg font-semibold mb-2">Descrição</h3>
-        <p class="text-gray-700 leading-relaxed">
-            {{ $task->description ?: 'Sem descrição fornecida.' }}
-        </p>
-    </div>
-
-    <!-- Informações da tarefa -->
-    <div class="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-        <div>
-            <span class="text-sm text-gray-500">Data de vencimento</span>
-            <p class="font-semibold">
-                @if($task->due_date)
-                    {{ \Carbon\Carbon::parse($task->due_date)->format('d/m/Y') }}
-                    @if($task->due_date_status == 'overdue' && $task->status != 'concluido')
-                        <span class="text-red-500 text-xs ml-2">(Expirada!)</span>
-                    @endif
-                @else
-                    Sem data definida
-                @endif
+        <!-- DESCRIPTION -->
+        <div class="mb-8">
+            <h3 class="text-sm text-white/60 mb-2">Descrição</h3>
+            <p class="text-white/80 leading-relaxed">
+                {{ $task->description ?: 'Sem descrição fornecida.' }}
             </p>
         </div>
-        <div>
-            <span class="text-sm text-gray-500">Dias restantes</span>
-            <p class="font-semibold">
-                @if($task->due_date)
-                    @php
-                        $daysLeft = $task->days_left;
-                    @endphp
-                    @if($daysLeft < 0)
-                        <span class="text-red-600">Atrasada há {{ abs($daysLeft) }} dias</span>
-                    @elseif($daysLeft == 0)
-                        <span class="text-orange-600">Vence hoje!</span>
+
+        <!-- INFO GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+
+            <!-- DUE DATE -->
+            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                <p class="text-xs text-white/50">Data de vencimento</p>
+
+                <p class="font-medium mt-1">
+                    @if($task->due_date)
+                        {{ \Carbon\Carbon::parse($task->due_date)->format('d/m/Y') }}
+
+                        @if($task->due_date_status == 'overdue' && $task->status != 'concluido')
+                            <span class="text-red-400 text-xs ml-2">Expirada</span>
+                        @endif
                     @else
-                        <span class="text-green-600">{{ $daysLeft }} dias</span>
+                        —
                     @endif
-                @else
-                    —
-                @endif
-            </p>
-        </div>
-        <div>
-            <span class="text-sm text-gray-500">Criada em</span>
-            <p class="font-semibold">{{ $task->created_at->format('d/m/Y') }}</p>
-        </div>
-        <div>
-            <span class="text-sm text-gray-500">Última atualização</span>
-            <p class="font-semibold">{{ $task->updated_at->format('d/m/Y') }}</p>
-        </div>
-
-
-        @if($task->sharedUsers->count())
-            <div class="text-xs text-gray-500 mt-1">
-                Partilhado com:
-                {{ $task->sharedUsers->pluck('name')->join(', ') }}
+                </p>
             </div>
-        @endif
+
+            <!-- DAYS LEFT -->
+            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                <p class="text-xs text-white/50">Tempo restante</p>
+
+                <p class="font-medium mt-1">
+                    @if($task->due_date)
+                        @php $daysLeft = $task->days_left; @endphp
+
+                        @if($daysLeft < 0)
+                            <span class="text-red-300">Atrasada {{ abs($daysLeft) }} dias</span>
+                        @elseif($daysLeft == 0)
+                            <span class="text-orange-300">Vence hoje</span>
+                        @else
+                            <span class="text-green-300">{{ $daysLeft }} dias</span>
+                        @endif
+                    @else
+                        —
+                    @endif
+                </p>
+            </div>
+
+            <!-- CREATED -->
+            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                <p class="text-xs text-white/50">Criada em</p>
+                <p class="font-medium mt-1">{{ $task->created_at->format('d/m/Y') }}</p>
+            </div>
+
+            <!-- UPDATED -->
+            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                <p class="text-xs text-white/50">Atualizada</p>
+                <p class="font-medium mt-1">{{ $task->updated_at->format('d/m/Y') }}</p>
+            </div>
+
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="space-y-3">
+
+            @if($task->status != 'concluido' && $task->status != 'expirado')
+                <form method="POST" action="{{ route('tasks.complete', $task) }}">
+                    @csrf
+                    @method('PATCH')
+
+                    <button type="submit"
+                            class="w-full py-3 rounded-xl bg-green-500 hover:bg-green-600 transition font-medium">
+                        Marcar como concluída
+                    </button>
+                </form>
+            @endif
+
+            <form method="POST"
+                  action="{{ route('tasks.destroy', $task) }}"
+                  onsubmit="return confirm('Tem certeza que deseja excluir?')">
+
+                @csrf
+                @method('DELETE')
+
+                <button type="submit"
+                        class="w-full py-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 transition border border-red-500/30">
+                    Excluir tarefa
+                </button>
+
+            </form>
+
+        </div>
+
     </div>
 
-    <!-- Botão de concluir (se não estiver concluído ou expirado) -->
-    @if($task->status != 'concluido' && $task->status != 'expirado')
-        <form method="POST" action="{{ route('tasks.complete', $task) }}" class="mb-4">
-            @csrf
-            @method('PATCH')
-            <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors">
-                Marcar como Concluída
-            </button>
-        </form>
-    @endif
-
-    <!-- Botão excluir -->
-    <form method="POST" action="{{ route('tasks.destroy', $task) }}" onsubmit="return confirm('Tem certeza?')">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">
-            Excluir Tarefa
-        </button>
-    </form>
 </div>
+
 @endsection

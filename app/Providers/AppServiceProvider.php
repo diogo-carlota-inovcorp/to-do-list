@@ -39,12 +39,6 @@ class AppServiceProvider extends ServiceProvider
         //  CONTADOR
         $count = 0;
 
-        // tarefas partilhadas pendentes
-        $count += DB::table('task_user')
-            ->where('user_id', $userId)
-            ->where('accepted', false)
-            ->count();
-
         // tarefas a expirar em 3 dias
         $count += Task::where('user_id', $userId)
             ->whereDate('due_date', now()->addDays(3))
@@ -59,15 +53,6 @@ class AppServiceProvider extends ServiceProvider
         //  NOTIFICAÇÕES (texto)
         $notifications = [];
 
-        // partilhadas
-        $shared = DB::table('task_user')
-            ->where('user_id', $userId)
-            ->where('accepted', false)
-            ->get();
-
-        foreach ($shared as $item) {
-            $notifications[] = "Nova tarefa partilhada contigo";
-        }
 
         // expirar
         $expiring = Task::where('user_id', $userId)

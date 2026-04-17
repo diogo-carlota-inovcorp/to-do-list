@@ -4,24 +4,60 @@
 
 @section('content')
 
-<div class="w-full max-w-lg bg-white/90 backdrop-blur p-8 rounded-2xl shadow-xl text-center space-y-6">
-    <h2 class="text-3xl font-bold">Organiza a tua vida</h2>
+<div class="min-h-[75vh] flex items-center justify-center px-4">
 
+    <div class="w-full max-w-3xl text-center space-y-8">
 
-<p class="text-gray-500">
-    Simple e intuitivo, para manter o controle das suas tarefas diárias com eficiência.
-</p>
+        <!--  HEADLINE -->
+        <div class="space-y-4">
+            <h1 class="text-4xl sm:text-5xl font-bold leading-tight">
+                Organiza a tua vida
 
-<div class="flex flex-col sm:flex-row gap-3 justify-center">
-    <a href="/register" class="w-full sm:w-auto px-4 py-2 bg-black text-white rounded-lg text-center">
-        Registrar
-    </a>
+            </h1>
 
-    <a href="/login" class="w-full sm:w-auto px-4 py-2 border rounded-lg text-center">
-        Login
-    </a>
+            <p class="text-white/70 max-w-xl mx-auto">
+                Uma forma simples e moderna de gerir as tuas tarefas diárias,
+                manter o foco e nunca mais esquecer o que importa.
+            </p>
+        </div>
+
+        <!--  ACTION BUTTONS -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+
+            <a href="/register"
+               class="px-6 py-3 bg-indigo-500 hover:bg-indigo-600 rounded-xl shadow-lg transition font-medium">
+                Começar agora
+            </a>
+
+            <a href="/login"
+               class="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition">
+                Já tenho conta
+            </a>
+
+        </div>
+
+        <!--  FEATURE CARDS -->
+        <div class="grid sm:grid-cols-3 gap-4 pt-6">
+
+            <div class="bg-white/10 backdrop-blur-lg p-4 rounded-xl border border-white/10">
+                <h3 class="font-semibold mt-2">Rápido</h3>
+                <p class="text-sm text-white/60">Cria tarefas em segundos</p>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-lg p-4 rounded-xl border border-white/10">
+                <h3 class="font-semibold mt-2">Organizado</h3>
+                <p class="text-sm text-white/60">Mantém tudo no sítio certo</p>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-lg p-4 rounded-xl border border-white/10">
+                <h3 class="font-semibold mt-2">Foco</h3>
+                <p class="text-sm text-white/60">Prioriza o que importa</p>
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
-
-</div>
 @endsection

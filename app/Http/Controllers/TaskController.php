@@ -8,106 +8,95 @@ use Carbon\Carbon;
 
 class TaskController extends Controller
 {
+public function index(Request $request)
+{
+    $user = auth()->user();
 
-    public function index(Request $request)
-    {
-        $notificationsCount = 0; // temporário
+    // notificações
+    $notifications = $user->notifications ?? collect();
+    $notificationsCount = $user->unreadNotifications->count() ?? 0;
 
-        // Atualizar status das tarefas expiradas
-        $expiredTasks = Task::where('user_id', auth()->id())
-                           ->where('status', '!=', 'concluido')
-                           ->where('due_date', '<', Carbon::today())
-                           ->get();
+    // expirar tarefas e enviar notificações
+ $expiredTasks = Task::where('user_id', $user->id)
+    ->where('status', '!=', 'concluido')
+    ->where('status', '!=', 'expirado')
+    ->where('due_date', '<', now())
+    ->get();
 
-        foreach ($expiredTasks as $task) {
-            $task->update(['status' => 'expirado']);
-        }
+foreach ($expiredTasks as $task) {
 
-        $query = Task::where('user_id', auth()->id());
+    $task->update(['status' => 'expirado']);
 
-        // Filtrar por prioridade
-        if ($request->has('priority') && in_array($request->priority, ['baixa', 'media', 'alta'])) {
-            $query->where('priority', $request->priority);
-        }
+    $user->notify(new \App\Notifications\TaskExpiredNotification([
+        'message' => "A tarefa '{$task->title}' expirou!"
+    ]));
+}
 
-        // Filtrar por categoria
-        if ($request->has('category') && $request->category != '') {
-            $query->where('category', $request->category);
-        }
 
-        // Filtrar por status
-        if ($request->has('status') && in_array($request->status, ['pendente', 'iniciado', 'em_andamento', 'concluido', 'expirado'])) {
-            $query->where('status', $request->status);
-        }
+   $query = Task::where(function ($q) use ($user) {
+    $q->where('user_id', $user->id)
+      ->orWhereHas('sharedUsers', function ($q2) use ($user) {
+          $q2->where('user_id', $user->id)
+             ->where('accepted', true);
+      });
+});
+if ($request->filled('priority')) {
+    $query->where('priority', $request->priority);
+}
 
-        $tasksQuery = Task::query();
+if ($request->filled('category')) {
+    $query->where('category', $request->category);
+}
 
-        if (request('selected_date')) {
-            $query->whereDate('due_date', request('selected_date'));
-        }
+if ($request->filled('status')) {
+    $query->where('status', $request->status);
+}
 
-    $tasks = $tasksQuery->get();
+if ($request->filled('selected_date')) {
+    $query->whereDate('due_date', $request->selected_date);
+}
 
-        $tasks = Task::where('user_id', auth()->id())
-            ->orWhereHas('sharedUsers', function ($q) {
-                $q->where('user_id', auth()->id())
-                ->where('accepted', true);
-            })
-            ->get();
+    // Ordenar por status e prioridade
+    $tasks = $query
+        ->orderByRaw("FIELD(status, 'pendente', 'iniciado', 'em_andamento', 'concluido', 'expirado')")
+        ->orderByRaw("FIELD(priority, 'alta', 'media', 'baixa')")
+        ->get();
 
-        $tasks = $query->orderByRaw("FIELD(status, 'pendente', 'iniciado', 'em_andamento', 'concluido', 'expirado')")
-                       ->orderByRaw("FIELD(priority, 'alta', 'media', 'baixa')")
-                       ->get();
+    $month = $request->get('month', now()->month);
+    $year = $request->get('year', now()->year);
 
-        $currentPriority = $request->get('priority');
-        $currentCategory = $request->get('category');
-        $currentStatus = $request->get('status');
+    $allTasks = Task::where('user_id', $user->id)
+        ->whereNotNull('due_date')
+        ->whereYear('due_date', $year)
+        ->whereMonth('due_date', $month)
+        ->get();
 
-        // Pegar dados do calendário
-        $month = $request->get('month', now()->month);
-        $year = $request->get('year', now()->year);
+    $allTasksForDots = Task::where('user_id', $user->id)
+        ->whereNotNull('due_date')
+        ->whereYear('due_date', $year)
+        ->whereMonth('due_date', $month)
+        ->orderBy('due_date')
+        ->get();
 
-        $allTasks = Task::where('user_id', auth()->id())
-                       ->whereNotNull('due_date')
-                       ->whereYear('due_date', $year)
-                       ->whereMonth('due_date', $month)
-                       ->get();
+    $categories = Task::where('user_id', $user->id)
+        ->whereNotNull('category')
+        ->select('category', 'category_color')
+        ->distinct()
+        ->get();
 
-        $allTasksForDots = Task::where('user_id', auth()->id())
-                               ->whereNotNull('due_date')
-                               ->get();
+    $calendarData = $this->getCalendarData($year, $month, $allTasks);
 
-        $categories = Task::where('user_id', auth()->id())
-                         ->whereNotNull('category')
-                         ->select('category', 'category_color')
-                         ->distinct()
-                         ->get();
-
-        $calendarData = $this->getCalendarData($year, $month, $allTasks);
-
-        return view('tasks.index', compact(
-            'tasks',
-            'currentPriority',
-            'currentCategory',
-            'currentStatus',
-            'allTasksForDots',
-            'notificationsCount',
-            'categories',
-            'calendarData',
-            'month',
-            'year'
-        ));
-
-            $selectedDate = request('selected_date');
-
-            if ($selectedDate) {
-                $tasks = $tasks->filter(function ($task) use ($selectedDate) {
-                    return $task->due_date &&
-                        \Carbon\Carbon::parse($task->due_date)->format('Y-m-d') === $selectedDate;
-                });
-            }
-
-    }
+    return view('tasks.index', compact(
+        'tasks',
+        'notifications',
+        'notificationsCount',
+        'categories',
+        'calendarData',
+        'allTasksForDots',
+        'month',
+        'year'
+    ));
+}
 
     private function getCalendarData($year, $month, $tasks)
     {
@@ -152,12 +141,16 @@ class TaskController extends Controller
     }
 
     public function create()
-    {
-        return view('tasks.create');
-    }
+{
+
+    return view('tasks.create');
+}
 
     public function store(Request $request)
     {
+
+
+
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -281,28 +274,5 @@ class TaskController extends Controller
         return response()->json(['success' => true, 'status' => $task->status_info]);
     }
 
-    public function share(Task $task, Request $request)
-{
-    $user = User::where('email', $request->email)->first();
-
-    if ($user) {
-        $task->sharedUsers()->attach($user->id, ['accepted' => false]);
-
-        // notificação
-        $user->notify(new TaskSharedNotification($task));
-    }
-
-    return back();
-}
-
-
-public function accept(Task $task)
-{
-    $task->sharedUsers()->updateExistingPivot(auth()->id(), [
-        'accepted' => true
-    ]);
-
-    return back();
-}
 
 }
